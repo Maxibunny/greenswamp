@@ -1,39 +1,44 @@
-# Lily Market — полный README по проекту
+# Lily Market — README проекта
 
 ## 1. Назначение проекта
 
-**Lily Market** — учебный backend для индивидуального задания по дисциплине «Серверное программирование».
+**Lily Market** — учебный backend-проект для индивидуального задания по дисциплине «Серверное программирование».
 
-Проект реализует серверную часть кампусного маркетплейса-аукциона: пользователи регистрируются по университетской почте, создают аукционы, делают ставки, получают уведомления и видят обновления аукциона в реальном времени через SignalR.
+Проект реализует серверную часть кампусного маркетплейса-аукциона. Пользователи регистрируются по университетской почте, входят в систему через JWT, создают аукционы, делают ставки, получают уведомления и видят live-обновления аукциона через SignalR.
 
-Основная идея проекта: сервер является единственным источником истины. Именно backend проверяет ставки, назначает победителя, завершает аукционы, создаёт уведомления и хранит данные в PostgreSQL.
+Главный принцип проекта: **сервер является единственным источником истины**. Frontend отображает состояние, но не принимает бизнес-решения. Именно backend проверяет ставки, защищает аукцион от конкурентных запросов, завершает торги, выбирает победителя, создаёт уведомления и сохраняет историю в базе данных.
 
 ---
 
-## 2. Краткий вывод по соответствию требованиям
+## 2. Краткое соответствие требованиям
 
-По предоставленной структуре и исходному коду проект закрывает основные критерии индивидуального задания:
-
-| Критерий | Статус | Где реализовано |
+| Требование | Статус | Основные файлы |
 |---|---:|---|
-| Работа с WebSocket / SignalR | Выполнено | `LilyMarket.Api/Hubs/AuctionHub.cs`, `Program.cs`, `auctions-detail.html` |
-| Архитектура API сервера | Выполнено | `Controllers`, `Services`, `Dtos`, `Entities`, `Data`, `Hubs` |
-| Авторизация пользователя | Выполнено | `AuthController.cs`, `JwtTokenService.cs`, `PasswordHasher.cs` |
-| Покрытие тестами | Выполнено | `LilyMarket.Tests/AuctionBidTests.cs` |
-| Работа с файлами пользователя | Выполнено | `FilesController.cs`, `FileStorageService.cs`, `wwwroot/uploads/auction-covers` |
-| Работа с Docker | Выполнено | `Dockerfile`, `docker-compose.yml`, `.dockerignore` |
-| Интеграция в приложение | Выполнено | `register.html`, `login.html`, `auctions.html`, `auctions-create.html`, `auctions-detail.html`, `profile.html` |
-| Полный цикл аукциона end-to-end | Выполнено | REST API + frontend + notifications + SignalR |
-| Защита от конкурентных ставок | Выполнено | `AuctionLockProvider.cs`, тесты конкурентности |
+| Регистрация по университетской почте | Выполнено | `AuthController.cs`, `JwtTokenService.cs`, `PasswordHasher.cs` |
+| JWT-аутентификация | Выполнено | `Program.cs`, `JwtTokenService.cs`, `[Authorize]` в контроллерах |
+| Создание аукционов | Выполнено | `AuctionsController.cs`, `CreateAuctionRequest.cs` |
+| Редактирование аукциона до первой ставки | Выполнено | `AuctionsController.cs` |
+| Отмена аукциона до первой ставки | Выполнено | `AuctionsController.cs` |
+| Ставки | Выполнено | `AuctionBidService.cs`, `AuctionsController.cs`, `AuctionHub.cs` |
+| Buy Now | Выполнено | `AuctionBidService.cs` |
 | Автоматическое завершение по времени | Выполнено | `AuctionClosingBackgroundService.cs`, `AuctionClosingService.cs` |
-
-Важное замечание: в проекте есть состояние `Sold` в enum `AuctionStatus`, но в предоставленном коде я не нашёл отдельный endpoint подтверждения сделки, который переводит аукцион из `Ended` в `Sold`. В тексте задания состояние `Sold` описано как часть жизненного цикла, но в минимальном списке обязательной реализации отдельно требуется создание, ставки, завершение и уведомления. Если преподаватель строго потребует именно переход `Ended -> Sold`, стоит добавить отдельный endpoint вида `POST /api/auctions/{id}/confirm-sale`. В остальном обязательная логика аукциона реализована.
-
-Ещё одно замечание перед сдачей: в архиве присутствуют папки `bin` и `obj`. Они не нужны для сдачи, потому что это результаты сборки. Их лучше удалить перед отправкой проекта.
+| Победитель по истечении времени | Выполнено | `AuctionClosingService.cs` |
+| Завершение без ставок | Выполнено | `AuctionClosingService.cs`, `AuctionNotificationService.cs` |
+| Уведомления | Выполнено | `AuctionNotificationService.cs`, `NotificationsController.cs`, `Notification.cs` |
+| SignalR / WebSocket | Выполнено | `AuctionHub.cs`, `Program.cs`, `auction-notifications.js` |
+| Reconnect SignalR-клиента | Выполнено | `auctions-detail.html`, `auction-notifications.js` |
+| История ставок в реальном времени | Выполнено | `AuctionNotificationService.cs`, `AuctionHub.cs`, `auction-notifications.js`, `auctions-detail.html` |
+| Состояния `Active`, `Ended`, `Sold`, `Canceled` | Выполнено | `AuctionStatus.cs`, `AuctionSaleService.cs`, `AuctionsController.cs` |
+| Подтверждение сделки `Ended -> Sold` | Выполнено | `AuctionSaleService.cs`, endpoint `POST /api/auctions/{id}/confirm-sale` |
+| PostgreSQL через EF Core | Выполнено | `AppDbContext.cs`, `Migrations`, `appsettings.json` |
+| Docker | Выполнено | `Dockerfile`, `docker-compose.yml`, `.dockerignore` |
+| Работа с файлами пользователя | Выполнено | `FilesController.cs`, `FileStorageService.cs` |
+| Тесты | Выполнено | `AuctionBidTests.cs`, `AuctionSaleTests.cs` |
+| Документация API | Выполнено | Swagger, этот README |
 
 ---
 
-## 3. Технологии проекта
+## 3. Используемые технологии
 
 Backend:
 
@@ -54,102 +59,104 @@ Frontend:
 - Tailwind CDN;
 - Fetch API;
 - SignalR JavaScript Client;
-- LocalStorage для хранения JWT.
+- LocalStorage для хранения JWT и пользователя.
 
 Тесты:
 
 - xUnit;
 - EF Core InMemory;
-- FluentAssertions указан в проекте тестов, но основные проверки сделаны через `Assert`.
+- стандартные `Assert`.
 
 ---
 
 ## 4. Архитектурное решение
 
-В проекте выбран **гибридный подход**.
+В проекте выбран **гибридный подход: REST + SignalR**.
 
-Команды, которые хорошо ложатся на стандартную HTTP-семантику, реализованы через REST API: регистрация, вход, создание аукциона, получение списка, получение деталей, редактирование, отмена, ставки, уведомления и загрузка файлов. Это упрощает тестирование, позволяет проверять API через Swagger и делает backend понятным для мобильного клиента.
+REST API используется для команд и стандартных операций: регистрация, вход, получение списка аукционов, получение деталей, создание, редактирование, отмена, подача ставки, подтверждение сделки, работа с уведомлениями и загрузка файлов. Такой подход упрощает тестирование, документирование через Swagger и интеграцию с frontend-клиентом.
 
-SignalR используется для realtime-слоя: клиент подключается к группе конкретного аукциона, получает snapshot текущего состояния, отправляет ставки через Hub и получает live-обновления `AuctionUpdated`. Такой подход подходит для мобильного приложения: основные операции надёжно доступны через REST, а живые изменения приходят без постоянного polling. От чистого REST с polling отказались, потому что для аукциона это хуже по задержке, трафику и батарее мобильного устройства. От чистого SignalR отказались, потому что REST проще документировать, тестировать и использовать через Swagger.
+SignalR используется для realtime-слоя: пользователи подключаются к группе конкретного аукциона, получают актуальное состояние, live-обновления цены, победителя, статуса, истории ставок и уведомлений. От чистого REST с polling отказались, потому что для аукционов это хуже по задержке, трафику и батарее мобильного устройства. От чистого SignalR отказались, потому что REST проще проверять, документировать и использовать для обычных CRUD-операций.
 
-JWT используется как единая система идентификации и для REST, и для SignalR. Для SignalR токен передаётся через `access_token`, а `Program.cs` извлекает его в `OnMessageReceived` для пути `/hubs/auction`.
+JWT используется как единая система идентификации и для REST, и для SignalR. Для REST токен передаётся через заголовок `Authorization: Bearer <token>`. Для SignalR токен передаётся через `access_token`, а backend извлекает его в `Program.cs` для пути `/hubs/auction`.
 
 ---
 
 ## 5. Структура проекта
 
-Основная структура без временных папок сборки:
-
 ```text
-LilyMarket.sln
-README.md
-REPORT.md
-TESTING.md
-Dockerfile
-docker-compose.yml
-.dockerignore
-.gitignore
-
-LilyMarket.Api/
-├── Controllers/
-│   ├── AuctionsController.cs
-│   ├── AuthController.cs
-│   ├── FilesController.cs
-│   └── NotificationsController.cs
-├── Data/
-│   └── AppDbContext.cs
-├── Dtos/
-│   ├── Auctions/
-│   ├── Auth/
-│   ├── Bids/
-│   ├── Files/
-│   └── Notifications/
-├── Entities/
-│   ├── AppUser.cs
-│   ├── Auction.cs
-│   ├── Bid.cs
-│   └── Notification.cs
-├── Enums/
-│   ├── AuctionStatus.cs
-│   └── NotificationType.cs
-├── Hubs/
-│   └── AuctionHub.cs
-├── Migrations/
-├── Services/
-│   ├── AuctionBidService.cs
-│   ├── AuctionBidServiceResult.cs
-│   ├── AuctionClosingBackgroundService.cs
-│   ├── AuctionClosingService.cs
-│   ├── AuctionLockProvider.cs
-│   ├── FileStorageService.cs
-│   ├── JwtTokenService.cs
-│   └── PasswordHasher.cs
-├── wwwroot/
-│   └── uploads/
-│       └── auction-covers/
-├── Program.cs
-├── appsettings.json
-└── appsettings.Development.json
-
-LilyMarket.Tests/
-├── AuctionBidTests.cs
-└── LilyMarket.Tests.csproj
-
-indiv/auction/
-├── auctions.html
-├── auctions-create.html
-├── auctions-detail.html
-└── README.md
-
-register.html
-login.html
-profile.html
-index.html
+greenswamp/
+├── README.md
+├── LILY_MARKET_FULL_README.md
+├── LilyMarket.sln
+├── Dockerfile
+├── docker-compose.yml
+├── .dockerignore
+├── .gitignore
+├── register.html
+├── login.html
+├── profile.html
+├── index.html
+├── indiv/
+│   └── auction/
+│       ├── auctions.html
+│       ├── auctions-create.html
+│       ├── auctions-detail.html
+│       ├── auction-notifications.js
+│       └── README.md
+├── LilyMarket.Api/
+│   ├── Controllers/
+│   │   ├── AuctionsController.cs
+│   │   ├── AuthController.cs
+│   │   ├── FilesController.cs
+│   │   └── NotificationsController.cs
+│   ├── Data/
+│   │   └── AppDbContext.cs
+│   ├── Dtos/
+│   │   ├── Auctions/
+│   │   ├── Auth/
+│   │   ├── Bids/
+│   │   ├── Files/
+│   │   └── Notifications/
+│   ├── Entities/
+│   │   ├── AppUser.cs
+│   │   ├── Auction.cs
+│   │   ├── Bid.cs
+│   │   └── Notification.cs
+│   ├── Enums/
+│   │   ├── AuctionStatus.cs
+│   │   └── NotificationType.cs
+│   ├── Hubs/
+│   │   └── AuctionHub.cs
+│   ├── Migrations/
+│   ├── Services/
+│   │   ├── AuctionBidService.cs
+│   │   ├── AuctionBidServiceResult.cs
+│   │   ├── AuctionClosingBackgroundService.cs
+│   │   ├── AuctionClosingService.cs
+│   │   ├── AuctionLockProvider.cs
+│   │   ├── AuctionNotificationService.cs
+│   │   ├── AuctionSaleService.cs
+│   │   ├── AuctionSaleServiceResult.cs
+│   │   ├── FileStorageService.cs
+│   │   ├── JwtTokenService.cs
+│   │   └── PasswordHasher.cs
+│   ├── wwwroot/
+│   │   └── uploads/
+│   │       └── auction-covers/
+│   ├── Program.cs
+│   ├── appsettings.json
+│   └── appsettings.Development.json
+└── LilyMarket.Tests/
+    ├── AuctionBidTests.cs
+    ├── AuctionSaleTests.cs
+    └── LilyMarket.Tests.csproj
 ```
+
+Папки `bin` и `obj` не нужны для сдачи. Это результаты сборки, они должны игнорироваться через `.gitignore`.
 
 ---
 
-## 6. Для чего нужны основные backend-файлы
+## 6. Основные backend-файлы
 
 ### `Program.cs`
 
@@ -157,24 +164,19 @@ index.html
 
 В нём настроены:
 
-- Controllers;
-- SignalR;
-- Swagger;
-- CORS;
-- EF Core + PostgreSQL;
-- JWT Bearer Authentication;
+- `Controllers`;
+- `SignalR`;
+- `Swagger`;
+- `CORS`;
+- `EF Core + PostgreSQL`;
+- `JWT Bearer Authentication`;
 - извлечение JWT для SignalR из `access_token`;
-- сервисы приложения;
+- регистрация сервисов;
 - `AuctionClosingBackgroundService`;
 - `UseStaticFiles()` для раздачи загруженных изображений;
-- endpoint `/` для проверки статуса API;
-- endpoint Hub `/hubs/auction`.
-
-Также в нём есть автоматическое применение миграций при Docker-запуске, если включён параметр:
-
-```text
-App__ApplyMigrationsOnStartup=true
-```
+- endpoint `/`;
+- endpoint Hub `/hubs/auction`;
+- автоматическое применение миграций при Docker-запуске, если включён параметр `App__ApplyMigrationsOnStartup=true`.
 
 ---
 
@@ -182,34 +184,20 @@ App__ApplyMigrationsOnStartup=true
 
 EF Core контекст базы данных.
 
-Содержит таблицы:
+Таблицы:
 
 - `Users`;
 - `Auctions`;
 - `Bids`;
 - `Notifications`.
 
-Также задаёт связи, индексы, ограничения длины строк, точность decimal-полей и хранение enum-ов как строк.
+Также задаёт связи между сущностями, индексы, ограничения длины строк, точность денежных decimal-полей и хранение enum-значений.
 
 ---
 
 ### `AuthController.cs`
 
 Контроллер авторизации.
-
-Реализует:
-
-- регистрацию пользователя;
-- вход пользователя;
-- получение текущего пользователя по JWT.
-
-Проверяет:
-
-- имя пользователя;
-- email;
-- университетский email;
-- минимальную длину пароля;
-- уникальность email.
 
 Endpoint-ы:
 
@@ -219,24 +207,21 @@ POST /api/auth/login
 GET  /api/auth/me
 ```
 
+Реализует:
+
+- регистрацию пользователя;
+- проверку университетской почты;
+- проверку уникальности email;
+- хэширование пароля;
+- вход пользователя;
+- выдачу JWT;
+- получение текущего пользователя по JWT.
+
 ---
 
 ### `AuctionsController.cs`
 
 Главный REST-контроллер аукционов.
-
-Реализует:
-
-- список активных аукционов;
-- фильтрацию по категории;
-- поиск;
-- сортировку;
-- пагинацию;
-- получение деталей;
-- создание аукциона;
-- редактирование аукциона;
-- отмену аукциона;
-- ставку через REST.
 
 Endpoint-ы:
 
@@ -247,7 +232,22 @@ POST   /api/auctions
 PUT    /api/auctions/{id}
 DELETE /api/auctions/{id}
 POST   /api/auctions/{id}/bids
+POST   /api/auctions/{id}/confirm-sale
 ```
+
+Реализует:
+
+- список аукционов;
+- поиск;
+- фильтрацию;
+- сортировку;
+- пагинацию;
+- получение деталей аукциона;
+- создание аукциона;
+- редактирование до первой ставки;
+- отмену до первой ставки;
+- ставку через REST;
+- подтверждение сделки и переход `Ended -> Sold`.
 
 ---
 
@@ -255,21 +255,27 @@ POST   /api/auctions/{id}/bids
 
 Сервис бизнес-логики ставок.
 
-Именно здесь выполняются основные правила аукциона:
+Проверяет:
 
-- аукцион должен существовать;
-- аукцион должен быть активным;
-- серверное время не должно быть позже `EndTimeUtc`;
-- продавец не может делать ставку на свой аукцион;
-- пользователь должен существовать;
-- первая ставка должна быть не ниже `StartingBid`;
-- последующие ставки должны быть не ниже `CurrentBid + MinimumIncrement`;
-- предыдущий лидер получает уведомление `Outbid`;
-- текущий участник получает `BidAccepted`;
-- если ставка достигла `BuyNowPrice`, аукцион завершается сразу;
-- создаются уведомления победителю и продавцу.
+- аукцион существует;
+- пользователь существует;
+- аукцион активен;
+- время аукциона ещё не истекло;
+- продавец не ставит на свой аукцион;
+- сумма ставки не ниже минимально допустимой;
+- первая ставка не ниже `StartingBid`;
+- последующие ставки не ниже `CurrentBid + MinimumIncrement`;
+- Buy Now завершает аукцион немедленно.
 
-В контроллере логика ставок не размазана — он вызывает сервис. Это улучшает архитектуру и делает тесты проще.
+Также сервис:
+
+- сохраняет ставку;
+- обновляет `CurrentBid`;
+- обновляет `CurrentWinnerId`;
+- обновляет `BidCount`;
+- создаёт уведомления;
+- вызывает realtime-обновления через `AuctionNotificationService`;
+- возвращает компактный результат для REST и SignalR.
 
 ---
 
@@ -277,26 +283,17 @@ POST   /api/auctions/{id}/bids
 
 Сервис защиты от конкурентных ставок.
 
-Использует:
+Использует `SemaphoreSlim` по каждому `auctionId`. Если два пользователя одновременно отправляют ставку на один аукцион, backend обрабатывает их последовательно. Это защищает состояние аукциона от повреждения.
 
-```csharp
-ConcurrentDictionary<Guid, SemaphoreSlim>
-```
-
-Для каждого аукциона создаётся отдельный `SemaphoreSlim`. Если две ставки приходят одновременно на один аукцион, они обрабатываются последовательно. Это защищает поля:
-
-- `CurrentBid`;
-- `CurrentWinnerId`;
-- `BidCount`;
-- список ставок.
+Для учебного проекта с одним экземпляром API этого достаточно. Для production-сценария с несколькими экземплярами backend потребовалась бы блокировка на уровне базы данных или распределённый lock.
 
 ---
 
 ### `AuctionClosingBackgroundService.cs`
 
-Фоновый сервис.
+Фоновый сервис, который регулярно запускает проверку аукционов.
 
-Он работает на сервере и регулярно вызывает обработку аукционов. Клиент не отвечает за завершение аукционов. Это соответствует требованию: серверные часы являются источником истины.
+Он не зависит от клиента. Это важно, потому что завершение аукциона должно происходить по серверному времени, а не по таймеру в браузере.
 
 ---
 
@@ -306,11 +303,56 @@ ConcurrentDictionary<Guid, SemaphoreSlim>
 
 Реализует:
 
-- уведомления о скором завершении;
-- завершение истёкших аукционов;
-- завершение без ставок;
-- завершение с победителем;
-- уведомления продавцу и победителю.
+- отправку уведомления о скором завершении;
+- закрытие аукционов, у которых наступил `EndTimeUtc`;
+- выбор победителя по максимальной валидной ставке;
+- обработку аукциона без ставок;
+- уведомления продавцу, победителю и участникам;
+- broadcast обновлённого состояния через SignalR.
+
+---
+
+### `AuctionSaleService.cs`
+
+Сервис подтверждения сделки.
+
+Реализует переход:
+
+```text
+Ended -> Sold
+```
+
+Проверяет:
+
+- пользователь существует;
+- аукцион существует;
+- аукцион ещё не `Sold`;
+- аукцион находится в статусе `Ended`;
+- у аукциона есть победитель;
+- подтверждает сделку именно победитель.
+
+После подтверждения создаётся уведомление `SaleConfirmed`, а участники получают live-обновление статуса.
+
+---
+
+### `AuctionNotificationService.cs`
+
+Центральный сервис уведомлений.
+
+Отвечает за:
+
+- создание уведомления о принятой ставке;
+- уведомление предыдущего лидера о перебитой ставке;
+- уведомление участников и продавца об активности в аукционе;
+- уведомление о скором завершении;
+- уведомление победителя;
+- уведомление продавца о завершении;
+- уведомление о завершении без ставок;
+- уведомление о подтверждении сделки;
+- SignalR broadcast обновления аукциона;
+- SignalR alert пользователям.
+
+Этот сервис связывает БД-уведомления и live-события, чтобы уведомления можно было получить как через REST, так и в реальном времени.
 
 ---
 
@@ -318,13 +360,13 @@ ConcurrentDictionary<Guid, SemaphoreSlim>
 
 SignalR Hub.
 
-Адрес:
+Endpoint:
 
 ```text
 /hubs/auction
 ```
 
-Методы:
+Основные методы:
 
 ```text
 JoinAuction
@@ -332,7 +374,7 @@ LeaveAuction
 PlaceBid
 ```
 
-События клиенту:
+Основные события клиенту:
 
 ```text
 AuctionSnapshot
@@ -340,19 +382,29 @@ AuctionUpdated
 BidAccepted
 BidRejected
 AuctionRealtimeError
+NotificationAlert
+Outbid
+AuctionActivity
+AuctionEndingSoon
+AuctionEnded
+SaleConfirmed
 ```
 
-Зачем нужен:
+Пользователи подключаются к группам:
 
-- чтобы две открытые вкладки аукциона видели обновления без перезагрузки;
-- чтобы мобильный клиент мог получать изменения в реальном времени;
-- чтобы пользователь сразу видел новую цену, победителя и статус аукциона.
+```text
+auction-{auctionId}
+user-{userId}
+```
+
+Группа `auction-{auctionId}` нужна для обновления всех клиентов на странице одного аукциона.  
+Группа `user-{userId}` нужна для персональных уведомлений конкретному пользователю.
 
 ---
 
 ### `NotificationsController.cs`
 
-Контроллер уведомлений.
+REST-контроллер уведомлений.
 
 Endpoint-ы:
 
@@ -362,13 +414,13 @@ POST /api/notifications/{id}/read
 POST /api/notifications/read-all
 ```
 
-Возвращает уведомления текущего пользователя и количество непрочитанных.
+Позволяет получить уведомления из БД, количество непрочитанных уведомлений и отметить уведомления прочитанными.
 
 ---
 
 ### `FilesController.cs` и `FileStorageService.cs`
 
-Отвечают за загрузку картинок аукциона.
+Отвечают за загрузку обложек аукционов.
 
 Endpoint:
 
@@ -376,14 +428,12 @@ Endpoint:
 POST /api/files/auction-cover
 ```
 
-Принимает `multipart/form-data`, поле `file`.
+Проверяется:
 
-Проверяет:
-
-- файл есть;
+- файл существует;
 - файл не пустой;
 - размер не больше 5 MB;
-- content-type разрешён;
+- тип файла разрешён;
 - расширение разрешено.
 
 Разрешённые форматы:
@@ -407,7 +457,7 @@ LilyMarket.Api/wwwroot/uploads/auction-covers
 
 ### `AppUser`
 
-Пользователь системы.
+Пользователь.
 
 Основные поля:
 
@@ -416,12 +466,6 @@ LilyMarket.Api/wwwroot/uploads/auction-covers
 - `Email`;
 - `PasswordHash`;
 - `CreatedAtUtc`.
-
-Связи:
-
-- пользователь может создать много аукционов;
-- пользователь может сделать много ставок;
-- пользователь может получить много уведомлений.
 
 ---
 
@@ -495,10 +539,13 @@ Canceled
 ```text
 BidAccepted
 Outbid
-AuctionWon
-AuctionEnded
-AuctionEndedNoBids
+AuctionActivity
+AuctionEndingSoon
 EndingSoon
+AuctionWon
+AuctionEndedNoBids
+AuctionEnded
+SaleConfirmed
 ```
 
 ---
@@ -511,28 +558,21 @@ EndingSoon
 dotnet --version
 ```
 
-Проект рассчитан на `.NET 9`, что подходит под требование `.NET 8–10`.
+Проект рассчитан на .NET 9, что подходит под требование `.NET 8–10`.
 
 ---
 
 ### 8.2. Проверить PostgreSQL
 
-Локальная база:
+Нужно, чтобы PostgreSQL был установлен и запущен.
+
+Пример локальной базы:
 
 ```text
-lily_market
-```
-
-Пользователь:
-
-```text
-postgres
-```
-
-Пароль в учебной конфигурации:
-
-```text
-1234567890
+Database: lily_market
+User: postgres
+Password: 1234567890
+Port: 5432
 ```
 
 ---
@@ -544,8 +584,6 @@ postgres
 ```text
 LilyMarket.Api/appsettings.json
 ```
-
-Там должна быть строка подключения к PostgreSQL.
 
 Пример:
 
@@ -567,6 +605,12 @@ LilyMarket.Api/appsettings.json
 dotnet ef database update --project LilyMarket.Api --startup-project LilyMarket.Api
 ```
 
+Если `dotnet ef` не установлен:
+
+```powershell
+dotnet tool install --global dotnet-ef
+```
+
 ---
 
 ### 8.5. Собрать проект
@@ -586,7 +630,7 @@ dotnet test
 Ожидаемый результат:
 
 ```text
-Сводка теста: сбой: 0
+Сводка теста: всего: 18; сбой: 0; успешно: 18; пропущено: 0
 ```
 
 ---
@@ -609,7 +653,7 @@ Swagger:
 http://localhost:5157/swagger/index.html
 ```
 
-Проверка статуса API:
+Проверка API:
 
 ```text
 http://localhost:5157/
@@ -618,8 +662,6 @@ http://localhost:5157/
 ---
 
 ## 9. Как запустить проект через Docker
-
-Docker нужен для проверки критерия «Работа с Docker».
 
 ### 9.1. Проверить Docker
 
@@ -638,60 +680,41 @@ docker compose version
 docker compose up --build
 ```
 
-После запуска должны подняться контейнеры:
+После запуска должны подняться:
 
 ```text
 lilymarket-api
 lilymarket-postgres
 ```
 
-API будет доступно:
+API:
+
+```text
+http://localhost:5157
+```
+
+Swagger:
 
 ```text
 http://localhost:5157/swagger/index.html
-```
-
-Проверка:
-
-```text
-http://localhost:5157/
-```
-
-В Docker-режиме ответ должен содержать:
-
-```json
-{
-  "service": "Lily Market API",
-  "status": "Running",
-  "environment": "Docker",
-  "timeUtc": "..."
-}
 ```
 
 ---
 
 ### 9.3. Почему PostgreSQL проброшен на 5433
 
-В `docker-compose.yml` указано:
+В `docker-compose.yml` внешний порт PostgreSQL обычно настроен так:
 
 ```yaml
 ports:
   - "5433:5432"
 ```
 
-Внутри контейнера PostgreSQL работает на `5432`, а на компьютере доступен через `5433`. Это сделано, чтобы Docker PostgreSQL не конфликтовал с локальным PostgreSQL.
+Внутри контейнера PostgreSQL работает на `5432`, а на компьютере доступен через `5433`. Это сделано, чтобы Docker PostgreSQL не конфликтовал с локальным PostgreSQL на `5432`.
 
 ---
 
 ### 9.4. Остановить Docker
-
-В терминале с `docker compose up --build` нажать:
-
-```text
-Ctrl + C
-```
-
-Потом выполнить:
 
 ```powershell
 docker compose down
@@ -707,7 +730,7 @@ docker compose down -v
 
 ## 10. Как открыть frontend
 
-Frontend — это HTML-файлы. Удобнее всего запускать через **Live Server** в VS Code.
+Frontend можно открыть через Live Server в VS Code.
 
 Основные страницы:
 
@@ -720,7 +743,7 @@ indiv/auction/auctions-create.html
 indiv/auction/auctions-detail.html
 ```
 
-Пример адресов через Live Server:
+Примеры адресов:
 
 ```text
 http://127.0.0.1:5500/register.html
@@ -756,7 +779,7 @@ POST /api/auth/login
 ```json
 {
   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6...",
-  "expiresAtUtc": "2026-05-21T19:00:00Z",
+  "expiresAtUtc": "2026-05-23T19:00:00Z",
   "user": {
     "id": "...",
     "fullName": "Seller Frog",
@@ -769,16 +792,16 @@ POST /api/auth/login
 
 ### 11.2. Как использовать JWT в Swagger
 
-1. Открыть Swagger:
+1. Открыть:
 
 ```text
 http://localhost:5157/swagger/index.html
 ```
 
-2. Нажать кнопку **Authorize**.
-3. Вставить token.
+2. Нажать **Authorize**.
+3. Вставить JWT.
 
-В текущей настройке Swagger схема называется `Bearer`, поэтому обычно достаточно вставить сам JWT без слова `Bearer`. Если Swagger не принимает, можно попробовать формат:
+Обычно достаточно вставить сам токен. Если Swagger ожидает полный формат, вставить:
 
 ```text
 Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6...
@@ -786,18 +809,12 @@ Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6...
 
 ---
 
-### 11.3. Как использовать JWT в обычном HTTP-запросе
+### 11.3. Как использовать JWT в HTTP-запросах
 
-Нужно добавить header:
+Добавить header:
 
 ```http
 Authorization: Bearer <JWT_TOKEN>
-```
-
-Пример:
-
-```http
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6...
 ```
 
 ---
@@ -811,27 +828,27 @@ lilyToken
 lilyUser
 ```
 
-`lilyToken` используется при запросах к защищённым endpoint-ам.
+`lilyToken` используется для защищённых REST-запросов и SignalR-подключения.
 
 ---
 
 ### 11.5. Как JWT используется в SignalR
 
-На frontend в `auctions-detail.html` SignalR подключается так, что JWT отдаётся через `accessTokenFactory`.
+Frontend передаёт JWT через `accessTokenFactory`.
 
-На backend в `Program.cs` настроено извлечение токена из query-параметра `access_token` для пути:
+Backend в `Program.cs` извлекает токен из query-параметра `access_token` для пути:
 
 ```text
 /hubs/auction
 ```
 
-Это позволяет использовать одного и того же пользователя и для REST, и для realtime-соединения.
+Так REST и SignalR используют одну систему идентификации.
 
 ---
 
-## 12. Все основные endpoint-ы и как ими пользоваться
+## 12. Основные API endpoint-ы
 
-## 12.1. Регистрация
+### 12.1. Регистрация
 
 ```text
 POST /api/auth/register
@@ -847,23 +864,9 @@ POST /api/auth/register
 }
 ```
 
-Что делает:
-
-- проверяет email;
-- проверяет пароль;
-- создаёт пользователя;
-- хэширует пароль;
-- возвращает JWT.
-
-Ожидаемый ответ:
-
-```text
-HTTP 200
-```
-
 ---
 
-## 12.2. Вход
+### 12.2. Вход
 
 ```text
 POST /api/auth/login
@@ -878,15 +881,9 @@ POST /api/auth/login
 }
 ```
 
-Что делает:
-
-- ищет пользователя;
-- проверяет пароль;
-- возвращает JWT.
-
 ---
 
-## 12.3. Текущий пользователь
+### 12.3. Текущий пользователь
 
 ```text
 GET /api/auth/me
@@ -894,19 +891,9 @@ GET /api/auth/me
 
 Требует JWT.
 
-Ответ:
-
-```json
-{
-  "id": "...",
-  "fullName": "Seller Frog",
-  "email": "seller@greens.edu"
-}
-```
-
 ---
 
-## 12.4. Список аукционов
+### 12.4. Список аукционов
 
 ```text
 GET /api/auctions
@@ -928,51 +915,19 @@ pageSize
 GET /api/auctions?sort=ending_soon&page=1&pageSize=12
 ```
 
-Ответ компактный и подходит для мобильного списка:
-
-```json
-{
-  "total": 1,
-  "page": 1,
-  "pageSize": 12,
-  "items": [
-    {
-      "id": "...",
-      "title": "MacBook Pro 13 2021 M1",
-      "category": "Tech",
-      "condition": "Good",
-      "coverImageUrl": "...",
-      "currentBid": 0,
-      "startingBid": 500,
-      "buyNowPrice": 850,
-      "bidCount": 0,
-      "endTime": "...",
-      "status": "Active"
-    }
-  ]
-}
-```
-
 ---
 
-## 12.5. Детали аукциона
+### 12.5. Детали аукциона
 
 ```text
 GET /api/auctions/{id}
 ```
 
-Возвращает полную информацию:
-
-- продавец;
-- текущий победитель;
-- описание;
-- цены;
-- статус;
-- история ставок.
+Возвращает полную информацию по аукциону, включая историю ставок.
 
 ---
 
-## 12.6. Создание аукциона
+### 12.6. Создание аукциона
 
 ```text
 POST /api/auctions
@@ -980,7 +935,7 @@ POST /api/auctions
 
 Требует JWT.
 
-Тело:
+Пример тела:
 
 ```json
 {
@@ -997,7 +952,7 @@ POST /api/auctions
 }
 ```
 
-Ожидаемый ответ:
+Успешный ответ:
 
 ```text
 HTTP 201
@@ -1005,7 +960,7 @@ HTTP 201
 
 ---
 
-## 12.7. Редактирование аукциона
+### 12.7. Редактирование аукциона
 
 ```text
 PUT /api/auctions/{id}
@@ -1019,11 +974,9 @@ PUT /api/auctions/{id}
 - пользователь является продавцом;
 - ставок ещё нет.
 
-Если ставка уже есть, сервер вернёт ошибку.
-
 ---
 
-## 12.8. Отмена аукциона
+### 12.8. Отмена аукциона
 
 ```text
 DELETE /api/auctions/{id}
@@ -1037,13 +990,7 @@ DELETE /api/auctions/{id}
 - пользователь является продавцом;
 - ставок ещё нет.
 
-При успешной отмене:
-
-```text
-HTTP 204
-```
-
-Статус аукциона становится:
+После успешной отмены статус становится:
 
 ```text
 Canceled
@@ -1051,7 +998,7 @@ Canceled
 
 ---
 
-## 12.9. Ставка через REST
+### 12.9. Ставка через REST
 
 ```text
 POST /api/auctions/{id}/bids
@@ -1067,7 +1014,7 @@ POST /api/auctions/{id}/bids
 }
 ```
 
-Ожидаемый успешный ответ:
+Успешный ответ:
 
 ```json
 {
@@ -1084,19 +1031,11 @@ POST /api/auctions/{id}/bids
 
 ---
 
-## 12.10. Некорректная ставка ниже шага
+### 12.10. Некорректная ставка ниже шага
 
-Если текущая ставка 500, а `minimumIncrement = 20`, ставка 510 будет отклонена.
+Если текущая ставка `500`, а `minimumIncrement = 20`, ставка `510` будет отклонена.
 
-Запрос:
-
-```json
-{
-  "amount": 510
-}
-```
-
-Ответ:
+Пример ответа:
 
 ```json
 {
@@ -1107,19 +1046,11 @@ POST /api/auctions/{id}/bids
 
 ---
 
-## 12.11. Buy Now
+### 12.11. Buy Now
 
-Если `buyNowPrice = 850`, ставка 850 завершает аукцион сразу.
+Если `buyNowPrice = 850`, ставка `850` завершает аукцион сразу.
 
-Запрос:
-
-```json
-{
-  "amount": 850
-}
-```
-
-Ожидаемый ответ:
+Пример ответа:
 
 ```json
 {
@@ -1135,7 +1066,30 @@ POST /api/auctions/{id}/bids
 
 ---
 
-## 12.12. Уведомления
+### 12.12. Подтверждение сделки
+
+```text
+POST /api/auctions/{id}/confirm-sale
+```
+
+Требует JWT победителя.
+
+Условия:
+
+- аукцион должен быть в статусе `Ended`;
+- у аукциона должен быть победитель;
+- подтверждать должен победитель;
+- аукцион не должен быть уже `Sold`.
+
+После успешного подтверждения статус становится:
+
+```text
+Sold
+```
+
+---
+
+### 12.13. Уведомления
 
 Получить уведомления:
 
@@ -1156,26 +1110,6 @@ take
 GET /api/notifications?unreadOnly=false&take=50
 ```
 
-Ответ:
-
-```json
-{
-  "total": 2,
-  "unreadCount": 2,
-  "items": [
-    {
-      "id": "...",
-      "auctionId": "...",
-      "auctionTitle": "MacBook Pro 13 2021 M1",
-      "type": "BidAccepted",
-      "message": "Your bid of $500 was accepted for MacBook Pro 13 2021 M1.",
-      "isRead": false,
-      "createdAtUtc": "..."
-    }
-  ]
-}
-```
-
 Отметить одно уведомление прочитанным:
 
 ```text
@@ -1190,7 +1124,7 @@ POST /api/notifications/read-all
 
 ---
 
-## 12.13. Загрузка обложки аукциона
+### 12.14. Загрузка обложки аукциона
 
 ```text
 POST /api/files/auction-cover
@@ -1210,22 +1144,11 @@ multipart/form-data
 file
 ```
 
-Ответ:
-
-```json
-{
-  "url": "http://localhost:5157/uploads/auction-covers/filename.jpg",
-  "fileName": "filename.jpg",
-  "sizeBytes": 12345,
-  "contentType": "image/jpeg"
-}
-```
-
-После этого `url` можно использовать как `coverImageUrl` при создании аукциона.
+Ответ содержит URL файла, который можно использовать как `coverImageUrl` при создании аукциона.
 
 ---
 
-## 13. SignalR: как работать
+## 13. SignalR
 
 Hub endpoint:
 
@@ -1233,7 +1156,7 @@ Hub endpoint:
 /hubs/auction
 ```
 
-Клиент подключается с JWT:
+Подключение:
 
 ```javascript
 const connection = new signalR.HubConnectionBuilder()
@@ -1252,13 +1175,13 @@ const connection = new signalR.HubConnectionBuilder()
 await connection.invoke('JoinAuction', auctionId);
 ```
 
-Сервер добавляет соединение в группу:
+Сервер добавляет пользователя в группу:
 
 ```text
 auction-{auctionId}
 ```
 
-И отправляет событие:
+И отправляет актуальное состояние через:
 
 ```text
 AuctionSnapshot
@@ -1266,23 +1189,13 @@ AuctionSnapshot
 
 ---
 
-### 13.2. Получить snapshot
-
-```javascript
-connection.on('AuctionSnapshot', auction => {
-  console.log('Current auction state:', auction);
-});
-```
-
----
-
-### 13.3. Сделать ставку через SignalR
+### 13.2. Сделать ставку через SignalR
 
 ```javascript
 await connection.invoke('PlaceBid', auctionId, 520);
 ```
 
-Если ставка принята, клиент получает:
+Если ставка принята:
 
 ```text
 BidAccepted
@@ -1297,41 +1210,71 @@ BidRejected
 
 ---
 
-### 13.4. Получить live-обновление
+### 13.3. Live-обновление аукциона
 
-```javascript
-connection.on('AuctionUpdated', auction => {
-  console.log('Auction updated:', auction);
-});
+Событие:
+
+```text
+AuctionUpdated
 ```
 
-Это событие отправляется всем клиентам, которые находятся в группе этого аукциона.
+Оно отправляется всем клиентам в группе аукциона. На frontend после этого обновляется цена, текущий победитель, статус и история ставок.
 
 ---
 
-### 13.5. Отключиться от группы
+### 13.4. Live-уведомления
 
-```javascript
-await connection.invoke('LeaveAuction', auctionId);
+События:
+
+```text
+NotificationAlert
+Outbid
+AuctionActivity
+AuctionEndingSoon
+AuctionEnded
+SaleConfirmed
 ```
 
----
-
-### 13.6. Проверка SignalR вручную
-
-1. Запустить backend.
-2. Создать аукцион.
-3. Открыть `auctions-detail.html?id={auctionId}` в двух вкладках.
-4. В одной вкладке сделать ставку.
-5. Во второй вкладке цена и история ставок должны обновиться без перезагрузки.
-6. Остановить backend и снова запустить.
-7. Frontend должен переподключиться через `withAutomaticReconnect` и снова получить актуальный snapshot.
+Они используются для всплывающих alert/toast-сообщений и синхронизации состояния у участников.
 
 ---
 
-## 14. Полный end-to-end сценарий проверки
+### 13.5. Reconnect
 
-### 14.1. Подготовка
+Frontend использует:
+
+```javascript
+.withAutomaticReconnect([0, 2000, 5000, 10000])
+```
+
+После переподключения клиент снова вызывает `JoinAuction`, а сервер отправляет свежий `AuctionSnapshot`. Это позволяет восстановить актуальное состояние после временного обрыва соединения.
+
+---
+
+## 14. Уведомления в проекте
+
+Обязательные уведомления из задания реализованы:
+
+| Событие | Тип уведомления |
+|---|---|
+| Принятая ставка | `BidAccepted` |
+| Ставка перебита | `Outbid` |
+| Кто-то взаимодействует с аукционом | `AuctionActivity` |
+| Скорое завершение за 5 минут | `AuctionEndingSoon` / `EndingSoon` |
+| Победа | `AuctionWon` |
+| Завершение с победителем | `AuctionEnded` |
+| Завершение без ставок | `AuctionEndedNoBids` |
+| Подтверждение сделки | `SaleConfirmed` |
+
+Уведомления сохраняются в БД, поэтому пользователь может увидеть их после перезагрузки страницы через `GET /api/notifications`.
+
+Для live-режима уведомления также отправляются через SignalR пользователям и участникам аукциона.
+
+---
+
+## 15. Полный end-to-end сценарий проверки
+
+### 15.1. Подготовка
 
 Запустить backend:
 
@@ -1347,106 +1290,67 @@ http://localhost:5157/swagger/index.html
 
 ---
 
-### 14.2. Продавец
+### 15.2. Продавец
 
-1. Выполнить `POST /api/auth/register`.
-2. Зарегистрировать продавца:
-
-```json
-{
-  "fullName": "Seller Frog",
-  "email": "seller@greens.edu",
-  "password": "123456"
-}
-```
-
-3. Скопировать JWT.
-4. Нажать `Authorize` в Swagger.
-5. Вставить JWT.
-6. Выполнить `POST /api/auctions`.
-7. Сохранить `id` аукциона.
+1. Зарегистрировать продавца через `POST /api/auth/register`.
+2. Получить JWT.
+3. Авторизоваться в Swagger.
+4. Создать аукцион через `POST /api/auctions`.
+5. Сохранить `id` аукциона.
 
 ---
 
-### 14.3. Покупатель
+### 15.3. Покупатель
 
-1. Выполнить `POST /api/auth/register`.
-2. Зарегистрировать покупателя:
+1. Зарегистрировать покупателя через `POST /api/auth/register`.
+2. Получить JWT покупателя.
+3. Авторизоваться как покупатель.
+4. Сделать ставку через `POST /api/auctions/{id}/bids`.
+5. Проверить, что ставка принята.
+6. Сделать ставку ниже шага и проверить ошибку.
+7. Сделать ставку на `buyNowPrice` и проверить завершение аукциона.
 
-```json
-{
-  "fullName": "Buyer Frog",
-  "email": "buyer@greens.edu",
-  "password": "123456"
-}
-```
+---
 
-3. Скопировать JWT покупателя.
-4. Заменить токен в Swagger.
-5. Выполнить ставку:
+### 15.4. Подтверждение сделки
+
+1. После завершения аукциона победитель вызывает:
 
 ```text
-POST /api/auctions/{id}/bids
+POST /api/auctions/{id}/confirm-sale
 ```
 
-```json
-{
-  "amount": 500
-}
+2. Проверить, что статус стал:
+
+```text
+Sold
 ```
-
-6. Проверить, что ставка принята.
-7. Выполнить некорректную ставку:
-
-```json
-{
-  "amount": 510
-}
-```
-
-8. Проверить, что сервер вернул ошибку и `minimumAllowedBid = 520`.
-9. Выполнить Buy Now:
-
-```json
-{
-  "amount": 850
-}
-```
-
-10. Проверить, что `auctionEnded = true`, а статус стал `Ended`.
 
 ---
 
-### 14.4. Уведомления
+### 15.5. Уведомления
 
-С токеном покупателя:
+Проверить уведомления продавца и покупателя:
 
 ```text
 GET /api/notifications
 ```
 
-Ожидаются:
+Ожидаемые типы:
 
 ```text
 BidAccepted
+Outbid
 AuctionWon
-```
-
-С токеном продавца:
-
-```text
-GET /api/notifications
-```
-
-Ожидается:
-
-```text
 AuctionEnded
+AuctionEndedNoBids
+AuctionEndingSoon
+SaleConfirmed
 ```
 
 ---
 
-### 14.5. Frontend
+### 15.6. Frontend
 
 Через Live Server открыть:
 
@@ -1457,23 +1361,32 @@ http://127.0.0.1:5500/register.html
 Проверить сценарий:
 
 ```text
-register.html -> auctions.html -> auctions-create.html -> auctions-detail.html
+register.html -> login.html -> auctions.html -> auctions-create.html -> auctions-detail.html
 ```
+
+Для проверки live-режима открыть страницу деталей одного аукциона в двух разных браузерах или профилях, войти под разными пользователями и сделать ставку. Цена, статус и история ставок должны обновляться у всех участников без ручной перезагрузки.
 
 ---
 
-## 15. Тесты проекта
+## 16. Тесты проекта
 
 Тесты находятся здесь:
 
 ```text
 LilyMarket.Tests/AuctionBidTests.cs
+LilyMarket.Tests/AuctionSaleTests.cs
 ```
 
 Запуск:
 
 ```powershell
 dotnet test
+```
+
+Ожидаемый результат:
+
+```text
+Сводка теста: всего: 18; сбой: 0; успешно: 18; пропущено: 0
 ```
 
 Покрытые сценарии:
@@ -1493,6 +1406,11 @@ dotnet test
 | `PlaceBid_UnknownUser_ShouldReturnUnauthorized` | несуществующий пользователь не может ставить |
 | `PlaceBid_UnknownAuction_ShouldReturnNotFound` | ставка на несуществующий аукцион возвращает 404 |
 | `PlaceBid_WhenAuctionTimeAlreadyPassed_ShouldCloseAuctionAndRejectBid` | серверное время блокирует позднюю ставку |
+| `ConfirmSale_WinnerConfirmsEndedAuction_ShouldMarkAuctionAsSold` | победитель подтверждает сделку |
+| `ConfirmSale_NotWinner_ShouldBeForbidden` | посторонний пользователь не может подтвердить сделку |
+| `ConfirmSale_ActiveAuction_ShouldBeRejected` | активный аукцион нельзя перевести в Sold |
+| `ConfirmSale_EndedAuctionWithoutWinner_ShouldBeRejected` | нельзя подтвердить аукцион без победителя |
+| `ConfirmSale_AlreadySoldAuction_ShouldBeRejected` | нельзя повторно подтвердить уже проданный аукцион |
 
 Обязательные требования к тестам закрыты:
 
@@ -1503,112 +1421,118 @@ dotnet test
 - Buy Now;
 - завершение по времени с победителем;
 - завершение без ставок;
-- асинхронность и конкурентность.
+- конкурентность;
+- подтверждение сделки.
 
 ---
 
-## 16. Проверка по критериям задания
+## 17. Проверка по критериям оценки
 
-### 16.1. Полный цикл аукциона end-to-end
+### 17.1. Полный цикл аукциона end-to-end
 
 Выполнено.
 
-Есть:
+Цикл:
 
-- регистрация продавца;
-- создание аукциона;
-- регистрация покупателя;
-- ставка;
-- Buy Now;
-- завершение;
-- победитель;
-- уведомления;
-- отображение во frontend.
-
----
-
-### 16.2. Правила ставок и конкурентный доступ
-
-Выполнено.
-
-Есть:
-
-- `AuctionBidService`;
-- `AuctionLockProvider`;
-- проверки minimumIncrement;
-- запрет продавцу ставить на свой аукцион;
-- запрет ставки после завершения;
-- тесты конкурентности.
-
----
-
-### 16.3. Архитектура
-
-Выполнено.
-
-Логика разделена:
-
-- `Controllers` — HTTP-слой;
-- `Services` — бизнес-логика;
-- `Dtos` — входные и выходные модели;
-- `Entities` — модели БД;
-- `Data` — EF Core;
-- `Hubs` — realtime;
-- `Tests` — проверка бизнес-логики.
-
----
-
-### 16.4. Отключение и переподключение мобильного клиента
-
-Выполнено на frontend-уровне через SignalR:
-
-```javascript
-.withAutomaticReconnect([0, 2000, 5000, 10000])
+```text
+регистрация -> JWT -> создание аукциона -> ставка -> live-обновление -> Buy Now / завершение по времени -> победитель -> уведомления -> Sold
 ```
 
-После reconnect вызывается повторный `JoinAuction`, и сервер отправляет актуальный `AuctionSnapshot`.
-
 ---
 
-### 16.5. Тесты
+### 17.2. Правила ставок и конкурентный доступ
 
 Выполнено.
 
-Тесты содержательные и покрывают обязательные области.
+Реализовано в:
+
+```text
+AuctionBidService.cs
+AuctionLockProvider.cs
+AuctionBidTests.cs
+```
 
 ---
 
-### 16.6. API-документация
+### 17.3. Архитектура
+
+Выполнено.
+
+Код разделён по слоям:
+
+```text
+Controllers
+Services
+Dtos
+Entities
+Data
+Hubs
+Tests
+```
+
+Бизнес-логика ставок, завершения и подтверждения сделки вынесена из контроллеров в сервисы.
+
+---
+
+### 17.4. Отключение и переподключение клиента
+
+Выполнено на frontend-уровне через SignalR automatic reconnect.
+
+После reconnect клиент снова подключается к группе аукциона и получает актуальное состояние.
+
+---
+
+### 17.5. Тесты
+
+Выполнено.
+
+Тесты запускаются командой:
+
+```powershell
+dotnet test
+```
+
+Без дополнительной настройки.
+
+---
+
+### 17.6. API-документация
 
 Выполнено.
 
 Есть:
 
 - Swagger;
-- README;
-- TESTING;
-- REPORT;
-- этот полный README.
+- этот README;
+- описание endpoint-ов;
+- описание JWT;
+- описание Docker;
+- описание SignalR;
+- описание тестов.
 
 ---
 
-### 16.7. Качество кода
+### 17.7. Качество кода
 
-Выполнено на хорошем уровне:
+Выполнено.
 
-- ставки вынесены в сервис;
-- завершение вынесено в сервис;
-- файлы вынесены в сервис;
-- JWT вынесен в сервис;
-- хэширование паролей вынесено в сервис;
-- конкурентность вынесена в provider;
-- контроллеры не содержат всю бизнес-логику ставок.
+Сильные стороны:
+
+- контроллеры не содержат всю бизнес-логику;
+- ставки вынесены в `AuctionBidService`;
+- завершение вынесено в `AuctionClosingService`;
+- подтверждение сделки вынесено в `AuctionSaleService`;
+- уведомления вынесены в `AuctionNotificationService`;
+- работа с файлами вынесена в `FileStorageService`;
+- JWT вынесен в `JwtTokenService`;
+- хэширование паролей вынесено в `PasswordHasher`;
+- конкурентность вынесена в `AuctionLockProvider`.
 
 ---
 
-## 17. Что удалить перед сдачей
+## 18. Что удалить перед сдачей
 
-В твоём архиве сейчас есть временные папки сборки:
+Перед сдачей не нужно отправлять временные папки сборки:
 
 ```text
 LilyMarket.Api/bin
@@ -1617,37 +1541,28 @@ LilyMarket.Tests/bin
 LilyMarket.Tests/obj
 ```
 
-Перед сдачей их лучше удалить. Они не нужны, потому что проект собирается командой:
-
-```powershell
-dotnet build
-```
-
-Также не нужно сдавать загруженные пользователем картинки:
+Также не нужно отправлять пользовательские загруженные файлы:
 
 ```text
 LilyMarket.Api/wwwroot/uploads/*
 ```
 
-Но можно оставить пустую структуру папок:
+Но можно оставить структуру папок:
 
 ```text
 LilyMarket.Api/wwwroot/uploads/auction-covers
 ```
 
-Если Git не хранит пустые папки, можно положить туда файл `.gitkeep`.
+Если Git не сохраняет пустую папку, можно добавить `.gitkeep`.
 
 ---
 
-## 18. Что обязательно оставить в сдаче
-
-Оставить:
+## 19. Что обязательно оставить
 
 ```text
-LilyMarket.sln
 README.md
-REPORT.md
-TESTING.md
+LILY_MARKET_FULL_README.md
+LilyMarket.sln
 Dockerfile
 docker-compose.yml
 .dockerignore
@@ -1664,7 +1579,7 @@ green-toad-sad.svg
 green-toad-wink.svg
 ```
 
-Не удалять:
+Обязательно оставить:
 
 ```text
 LilyMarket.Api/Migrations
@@ -1675,16 +1590,16 @@ LilyMarket.Api/Program.cs
 
 ---
 
-## 19. Быстрый чек-лист перед сдачей
+## 20. Быстрый чек-лист перед сдачей
 
-Перед отправкой проекта выполнить:
+Выполнить:
 
 ```powershell
 dotnet build
 dotnet test
 ```
 
-Потом проверить локальный запуск:
+Запустить backend:
 
 ```powershell
 dotnet run --project LilyMarket.Api
@@ -1696,46 +1611,61 @@ dotnet run --project LilyMarket.Api
 http://localhost:5157/swagger/index.html
 ```
 
-Потом проверить Docker:
+Проверить Docker:
 
 ```powershell
 docker compose up --build
 ```
 
-Открыть:
-
-```text
-http://localhost:5157/swagger/index.html
-```
-
-Потом проверить frontend через Live Server:
+Проверить frontend через Live Server:
 
 ```text
 http://127.0.0.1:5500/register.html
 ```
 
----
+Проверить сценарий:
 
-## 20. Академическая честность
-
-При разработке можно указать, что использовался ИИ-инструмент как помощник для:
-
-- объяснения ошибок;
-- планирования структуры;
-- подготовки DTO, сервисов и контроллеров;
-- написания тестовых сценариев;
-- подготовки документации.
-
-Итоговый код был адаптирован под проект, проверен локально и через Docker.
+```text
+продавец -> создание аукциона -> покупатель -> ставка -> live-обновление -> Buy Now -> уведомления -> confirm-sale -> Sold
+```
 
 ---
 
-## 21. Итог
+## 21. Академическая честность и использование ИИ-инструмента
+
+Проектные решения и итоговая реализация адаптированы под данное индивидуальное задание и структуру проекта Lily Market.
+
+В процессе разработки использовался ИИ-инструмент ChatGPT как помощник для:
+
+- объяснения ошибок компиляции и тестов;
+- планирования архитектуры REST + SignalR;
+- подготовки вариантов DTO, сервисов и контроллеров;
+- написания и расширения тестовых сценариев;
+- улучшения README-документации;
+- проверки соответствия проекта критериям задания.
+
+ИИ-инструмент использовался как справочный и учебный помощник. Итоговые решения, структура проекта, проверка работоспособности, запуск `dotnet build`, `dotnet test`, Docker и интеграция с frontend выполнялись и адаптировались в рамках данного проекта.
+
+---
+
+## 22. Итог
 
 Проект реализует backend аукционного приложения Lily Market с полным циклом:
 
 ```text
-регистрация -> JWT -> создание аукциона -> ставка -> realtime-обновление -> Buy Now / завершение по времени -> уведомления -> frontend-интеграция -> тесты -> Docker
+регистрация -> JWT -> создание аукциона -> ставка -> realtime-обновление -> Buy Now / завершение по времени -> уведомления -> подтверждение сделки Sold -> frontend-интеграция -> тесты -> Docker
 ```
 
-Основные критерии индивидуального задания закрыты. Единственное место, которое можно усилить при строгой проверке жизненного цикла, — отдельный endpoint подтверждения сделки и перевод `Ended -> Sold`. Сейчас enum `Sold` есть, но отдельного endpoint-а подтверждения сделки в предоставленном коде не обнаружено.
+Основные критерии индивидуального задания закрыты:
+
+- WebSocket / SignalR;
+- архитектура API;
+- авторизация;
+- тесты;
+- файлы пользователя;
+- Docker;
+- интеграция с frontend;
+- realtime-обновления;
+- уведомления;
+- конкурентность;
+- серверное завершение аукционов.
