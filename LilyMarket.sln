@@ -1,0 +1,48 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LilyMarket.Api", "LilyMarket.Api\LilyMarket.Api.csproj", "{D4194A49-B8AF-4ACA-B46E-1A1A93FCB8D3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LilyMarket.Tests", "LilyMarket.Tests\LilyMarket.Tests.csproj", "{1880D507-0E6B-46A9-ABF5-FD96009FAB95}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D4194A49-B8AF-4ACA-B46E-1A1A93FCB8D3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D4194A49-B8AF-4ACA-B46E-1A1A93FCB8D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D4194A49-B8AF-4ACA-B46E-1A1A93FCB8D3}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{D4194A49-B8AF-4ACA-B46E-1A1A93FCB8D3}.Debug|x64.Build.0 = Debug|Any CPU
+		{D4194A49-B8AF-4ACA-B46E-1A1A93FCB8D3}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D4194A49-B8AF-4ACA-B46E-1A1A93FCB8D3}.Debug|x86.Build.0 = Debug|Any CPU
+		{D4194A49-B8AF-4ACA-B46E-1A1A93FCB8D3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D4194A49-B8AF-4ACA-B46E-1A1A93FCB8D3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D4194A49-B8AF-4ACA-B46E-1A1A93FCB8D3}.Release|x64.ActiveCfg = Release|Any CPU
+		{D4194A49-B8AF-4ACA-B46E-1A1A93FCB8D3}.Release|x64.Build.0 = Release|Any CPU
+		{D4194A49-B8AF-4ACA-B46E-1A1A93FCB8D3}.Release|x86.ActiveCfg = Release|Any CPU
+		{D4194A49-B8AF-4ACA-B46E-1A1A93FCB8D3}.Release|x86.Build.0 = Release|Any CPU
+		{1880D507-0E6B-46A9-ABF5-FD96009FAB95}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1880D507-0E6B-46A9-ABF5-FD96009FAB95}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1880D507-0E6B-46A9-ABF5-FD96009FAB95}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{1880D507-0E6B-46A9-ABF5-FD96009FAB95}.Debug|x64.Build.0 = Debug|Any CPU
+		{1880D507-0E6B-46A9-ABF5-FD96009FAB95}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{1880D507-0E6B-46A9-ABF5-FD96009FAB95}.Debug|x86.Build.0 = Debug|Any CPU
+		{1880D507-0E6B-46A9-ABF5-FD96009FAB95}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1880D507-0E6B-46A9-ABF5-FD96009FAB95}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1880D507-0E6B-46A9-ABF5-FD96009FAB95}.Release|x64.ActiveCfg = Release|Any CPU
+		{1880D507-0E6B-46A9-ABF5-FD96009FAB95}.Release|x64.Build.0 = Release|Any CPU
+		{1880D507-0E6B-46A9-ABF5-FD96009FAB95}.Release|x86.ActiveCfg = Release|Any CPU
+		{1880D507-0E6B-46A9-ABF5-FD96009FAB95}.Release|x86.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

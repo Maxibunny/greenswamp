@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile — Greenswamp</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        swamp: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            200: '#bbf7d0',
+                            300: '#86efac',
+                            400: '#4ade80',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                            900: '#14532d'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .card {
+            background: white;
+            border: 1px solid #dcfce7;
+            border-radius: 1.25rem;
+            box-shadow: 0 6px 18px rgba(21, 128, 61, 0.08);
+        }
+
+        .notification-card {
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .notification-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 22px rgba(21, 128, 61, 0.12);
+        }
+
+        .status-dot {
+            width: 0.65rem;
+            height: 0.65rem;
+            border-radius: 9999px;
+            background: #22c55e;
+            box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.15);
+        }
+    </style>
+</head>
+<body class="bg-swamp-50 min-h-screen">
+
+<nav class="bg-white shadow-lg sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4">
+        <div class="flex justify-between items-center h-16">
+            <a href="index.html" class="flex items-center space-x-2">
+                <img src="green-toad-logo.svg" alt="Greenswamp Logo" class="h-8 w-8" onerror="this.style.display='none'">
+                <span class="text-2xl font-bold text-swamp-600">Greenswamp</span>
+            </a>
+
+            <div class="hidden md:flex space-x-8 items-center">
+                <a href="feed.html" class="text-swamp-600 hover:text-swamp-800 font-medium">Swamp</a>
+                <a href="#" class="text-swamp-600 hover:text-swamp-800 font-medium">Ponds</a>
+                <a href="indiv/auction/auctions.html" class="text-swamp-600 hover:text-swamp-800 font-medium">Market</a>
+                <a href="#" class="text-swamp-600 hover:text-swamp-800 font-medium">Fireflies</a>
+                <a href="indiv/auction/auctions-create.html" class="bg-swamp-500 text-white px-6 py-2 rounded-full hover:bg-swamp-600 font-medium">
+                    + New Listing
+                </a>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <a id="login-link" href="login.html" class="rounded-full bg-swamp-500 text-white px-5 py-2 font-semibold hover:bg-swamp-600">
+                    Sign in
+                </a>
+
+                <button id="logout-button" onclick="signOut()" class="hidden rounded-full border border-red-200 text-red-500 px-5 py-2 font-semibold hover:bg-red-50">
+                    Sign out
+                </button>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<main class="max-w-7xl mx-auto px-4 py-8">
+    <div id="loading-state" class="card p-10 text-center">
+        <div class="text-5xl mb-4">🐸</div>
+        <h1 class="text-2xl font-bold text-swamp-900">Loading profile...</h1>
+        <p class="text-swamp-600 mt-2">Checking your session with backend.</p>
+    </div>
+
+    <div id="unauthorized-state" class="hidden card p-10 text-center">
+        <div class="text-5xl mb-4">🔐</div>
+        <h1 class="text-2xl font-bold text-swamp-900">You are not logged in</h1>
+        <p class="text-swamp-600 mt-2">Log in to view your profile and auction notifications.</p>
+        <div class="mt-6 flex justify-center gap-3">
+            <a href="login.html" class="rounded-full bg-swamp-600 text-white px-6 py-3 font-bold hover:bg-swamp-700">
+                Log in
+            </a>
+            <a href="register.html" class="rounded-full border border-swamp-200 text-swamp-700 px-6 py-3 font-bold hover:bg-swamp-50">
+                Create account
+            </a>
+        </div>
+    </div>
+
+    <div id="error-state" class="hidden card p-10 text-center">
+        <div class="text-5xl mb-4">🪷</div>
+        <h1 class="text-2xl font-bold text-swamp-900">Could not load profile</h1>
+        <p id="error-message" class="text-swamp-600 mt-2">Something went wrong.</p>
+        <button onclick="loadProfilePage()" class="mt-6 rounded-full bg-swamp-600 text-white px-6 py-3 font-bold hover:bg-swamp-700">
+            Try again
+        </button>
+    </div>
+
+    <div id="profile-content" class="hidden">
+        <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <aside class="space-y-6">
+                <div class="card p-6">
+                    <div class="flex items-center gap-4">
+                        <div id="profile-avatar" class="w-20 h-20 rounded-full bg-swamp-100 border-4 border-swamp-300 flex items-center justify-center text-3xl font-black text-swamp-700">
+                            U
+                        </div>
+
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="status-dot"></span>
+                                <span class="text-xs font-bold text-swamp-600 uppercase tracking-wide">Online</span>
+                            </div>
+                            <h1 id="profile-name" class="mt-2 text-2xl font-black text-swamp-900">User</h1>
+                            <p id="profile-email" class="text-swamp-600 text-sm">email</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 rounded-2xl bg-swamp-50 border border-swamp-100 p-4">
+                        <p class="text-xs font-bold text-swamp-500 uppercase tracking-wide">Backend status</p>
+                        <p id="backend-status" class="mt-1 text-swamp-900 font-bold">Connected to Lily Market API</p>
+                    </div>
+
+                    <div class="mt-5 grid grid-cols-2 gap-3">
+                        <a href="indiv/auction/auctions.html" class="rounded-2xl bg-white border border-swamp-100 p-4 hover:bg-swamp-50">
+                            <p class="text-2xl">🪷</p>
+                            <p class="text-sm font-bold text-swamp-900 mt-1">Market</p>
+                        </a>
+
+                        <a href="indiv/auction/auctions-create.html" class="rounded-2xl bg-white border border-swamp-100 p-4 hover:bg-swamp-50">
+                            <p class="text-2xl">➕</p>
+                            <p class="text-sm font-bold text-swamp-900 mt-1">New listing</p>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="card p-6">
+                    <h2 class="text-xl font-black text-swamp-900">Session</h2>
+                    <p class="text-sm text-swamp-600 mt-2">
+                        The page uses JWT from localStorage and sends it to the backend with the Authorization header.
+                    </p>
+
+                    <div class="mt-4 rounded-2xl bg-swamp-50 border border-swamp-100 p-4">
+                        <p class="text-xs font-bold text-swamp-500 uppercase tracking-wide">Token</p>
+                        <p id="token-preview" class="mt-1 text-xs text-swamp-700 break-all"></p>
+                    </div>
+
+                    <button onclick="signOut()" class="mt-5 w-full rounded-full bg-red-500 text-white px-5 py-3 font-bold hover:bg-red-600">
+                        Sign out
+                    </button>
+                </div>
+            </aside>
+
+            <section class="lg:col-span-2 space-y-6">
+                <div class="card p-6">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                        <div>
+                            <h2 class="text-2xl font-black text-swamp-900">Notifications</h2>
+                            <p class="text-sm text-swamp-600 mt-1">
+                                Real notifications loaded from backend.
+                            </p>
+                        </div>
+
+                        <div class="flex gap-2">
+                            <button onclick="loadNotifications()" class="rounded-full border border-swamp-200 text-swamp-700 px-4 py-2 text-sm font-bold hover:bg-swamp-50">
+                                Refresh
+                            </button>
+
+                            <button id="read-all-button" onclick="markAllNotificationsAsRead()" class="rounded-full bg-swamp-600 text-white px-4 py-2 text-sm font-bold hover:bg-swamp-700 disabled:opacity-50 disabled:cursor-not-allowed">
+                                Mark all as read
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="mt-5 grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        <div class="rounded-2xl bg-swamp-50 border border-swamp-100 p-4">
+                            <p class="text-xs font-bold text-swamp-500 uppercase tracking-wide">Total</p>
+                            <p id="notification-total" class="text-2xl font-black text-swamp-900">0</p>
+                        </div>
+
+                        <div class="rounded-2xl bg-swamp-50 border border-swamp-100 p-4">
+                            <p class="text-xs font-bold text-swamp-500 uppercase tracking-wide">Unread</p>
+                            <p id="notification-unread" class="text-2xl font-black text-swamp-900">0</p>
+                        </div>
+
+                        <div class="rounded-2xl bg-swamp-50 border border-swamp-100 p-4 col-span-2 sm:col-span-1">
+                            <p class="text-xs font-bold text-swamp-500 uppercase tracking-wide">Filter</p>
+                            <select id="notification-filter" onchange="loadNotifications()" class="mt-2 w-full rounded-xl border border-swamp-200 bg-white px-3 py-2 text-sm text-swamp-800 outline-none focus:ring-2 focus:ring-swamp-200">
+                                <option value="false">All</option>
+                                <option value="true">Unread only</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="notification-message" class="hidden mt-5 rounded-xl px-4 py-3 text-sm font-semibold border"></div>
+
+                    <div id="notification-loading" class="mt-6 rounded-2xl bg-swamp-50 border border-swamp-100 p-6 text-center">
+                        <p class="font-bold text-swamp-900">Loading notifications...</p>
+                    </div>
+
+                    <div id="notification-empty" class="hidden mt-6 rounded-2xl bg-swamp-50 border border-swamp-100 p-8 text-center">
+                        <p class="text-4xl mb-3">🌿</p>
+                        <p class="font-bold text-swamp-900">No notifications yet</p>
+                        <p class="text-sm text-swamp-600 mt-1">Bids and auction updates will appear here.</p>
+                    </div>
+
+                    <div id="notifications-list" class="mt-6 space-y-3"></div>
+                </div>
+
+                <div class="card p-6">
+                    <h2 class="text-2xl font-black text-swamp-900">API checklist</h2>
+                    <p class="text-sm text-swamp-600 mt-1">
+                        This page confirms frontend integration with protected endpoints.
+                    </p>
+
+                    <div class="mt-5 space-y-3">
+                        <div class="flex items-center justify-between rounded-2xl border border-swamp-100 bg-swamp-50 p-4">
+                            <div>
+                                <p class="font-bold text-swamp-900">GET /api/auth/me</p>
+                                <p class="text-sm text-swamp-600">Checks current authenticated user.</p>
+                            </div>
+                            <span id="check-me" class="rounded-full bg-gray-200 text-gray-700 px-3 py-1 text-xs font-bold">Pending</span>
+                        </div>
+
+                        <div class="flex items-center justify-between rounded-2xl border border-swamp-100 bg-swamp-50 p-4">
+                            <div>
+                                <p class="font-bold text-swamp-900">GET /api/notifications</p>
+                                <p class="text-sm text-swamp-600">Loads user notifications from database.</p>
+                            </div>
+                            <span id="check-notifications" class="rounded-full bg-gray-200 text-gray-700 px-3 py-1 text-xs font-bold">Pending</span>
+                        </div>
+
+                        <div class="flex items-center justify-between rounded-2xl border border-swamp-100 bg-swamp-50 p-4">
+                            <div>
+                                <p class="font-bold text-swamp-900">POST /api/notifications/read-all</p>
+                                <p class="text-sm text-swamp-600">Marks notifications as read.</p>
+                            </div>
+                            <span id="check-read-all" class="rounded-full bg-gray-200 text-gray-700 px-3 py-1 text-xs font-bold">Ready</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </section>
+    </div>
+</main>
+
+<script>
+    const API_BASE_URL = 'http://localhost:5157';
+
+    let currentUser = null;
+
+    function getToken() {
+        return localStorage.getItem('lilyToken') || sessionStorage.getItem('gsToken');
+    }
+
+    function getSavedUser() {
+        const raw = localStorage.getItem('lilyUser');
+
+        if (raw) {
+            try {
+                return JSON.parse(raw);
+            } catch {
+                return null;
+            }
+        }
+
+        return null;
+    }
+
+    function setCheck(id, status) {
+        const element = document.getElementById(id);
+
+        if (!element) {
+            return;
+        }
+
+        element.textContent = status;
+
+        element.className = 'rounded-full px-3 py-1 text-xs font-bold';
+
+        if (status === 'OK') {
+            element.classList.add('bg-swamp-100', 'text-swamp-700');
+        } else if (status === 'Failed') {
+            element.classList.add('bg-red-100', 'text-red-700');
+        } else {
+            element.classList.add('bg-gray-200', 'text-gray-700');
+        }
+    }
+
+    function showPage(state) {
+        document.getElementById('loading-state').classList.toggle('hidden', state !== 'loading');
+        document.getElementById('unauthorized-state').classList.toggle('hidden', state !== 'unauthorized');
+        document.getElementById('error-state').classList.toggle('hidden', state !== 'error');
+        document.getElementById('profile-content').classList.toggle('hidden', state !== 'content');
+
+        const loggedIn = !!getToken();
+
+        document.getElementById('login-link').classList.toggle('hidden', loggedIn);
+        document.getElementById('logout-button').classList.toggle('hidden', !loggedIn);
+    }
+
+    function showError(message) {
+        document.getElementById('error-message').textContent = message;
+        showPage('error');
+    }
+
+    async function loadProfilePage() {
+        const token = getToken();
+
+        if (!token) {
+            showPage('unauthorized');
+            return;
+        }
+
+        showPage('loading');
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/auth/me`, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            const data = await response.json().catch(function () {
+                return null;
+            });
+
+            if (!response.ok) {
+                localStorage.removeItem('lilyToken');
+                localStorage.removeItem('lilyUser');
+
+                setCheck('check-me', 'Failed');
+
+                if (response.status === 401) {
+                    showPage('unauthorized');
+                    return;
+                }
+
+                throw new Error(data?.message || `Profile request failed. HTTP ${response.status}`);
+            }
+
+            currentUser = data;
+
+            localStorage.setItem('lilyUser', JSON.stringify(data));
+
+            renderProfile(data);
+            setCheck('check-me', 'OK');
+            showPage('content');
+
+            await loadNotifications();
+        } catch (error) {
+            console.error(error);
+            setCheck('check-me', 'Failed');
+            showError(error.message || 'Cannot connect to API. Make sure backend is running on http://localhost:5157.');
+        }
+    }
+
+    function renderProfile(user) {
+        const name = user.fullName || 'User';
+        const email = user.email || '';
+        const firstLetter = (name || email || 'U').charAt(0).toUpperCase();
+        const token = getToken() || '';
+
+        document.getElementById('profile-avatar').textContent = firstLetter;
+        document.getElementById('profile-name').textContent = name;
+        document.getElementById('profile-email').textContent = email;
+        document.getElementById('token-preview').textContent = token
+            ? `${token.slice(0, 24)}...${token.slice(-16)}`
+            : 'No token found';
+
+        document.getElementById('backend-status').textContent = `Connected as ${email}`;
+    }
+
+    async function loadNotifications() {
+        const token = getToken();
+
+        if (!token) {
+            return;
+        }
+
+        const unreadOnly = document.getElementById('notification-filter').value;
+        const loading = document.getElementById('notification-loading');
+        const empty = document.getElementById('notification-empty');
+        const list = document.getElementById('notifications-list');
+
+        loading.classList.remove('hidden');
+        empty.classList.add('hidden');
+        list.innerHTML = '';
+        hideNotificationMessage();
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/notifications?unreadOnly=${unreadOnly}&take=50`, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            const data = await response.json().catch(function () {
+                return null;
+            });
+
+            if (!response.ok) {
+                setCheck('check-notifications', 'Failed');
+                throw new Error(data?.message || `Notifications request failed. HTTP ${response.status}`);
+            }
+
+            setCheck('check-notifications', 'OK');
+
+            document.getElementById('notification-total').textContent = data.total ?? 0;
+            document.getElementById('notification-unread').textContent = data.unreadCount ?? 0;
+
+            const items = Array.isArray(data.items) ? data.items : [];
+
+            if (items.length === 0) {
+                empty.classList.remove('hidden');
+                return;
+            }
+
+            renderNotifications(items);
+        } catch (error) {
+            console.error(error);
+            showNotificationMessage(error.message || 'Cannot load notifications.', 'error');
+        } finally {
+            loading.classList.add('hidden');
+        }
+    }
+
+    function renderNotifications(items) {
+        const list = document.getElementById('notifications-list');
+
+        list.innerHTML = items.map(function (item) {
+            const typeInfo = getNotificationTypeInfo(item.type);
+            const readBadge = item.isRead
+                ? '<span class="rounded-full bg-gray-100 text-gray-600 px-3 py-1 text-xs font-bold">Read</span>'
+                : '<span class="rounded-full bg-swamp-100 text-swamp-700 px-3 py-1 text-xs font-bold">Unread</span>';
+
+            const detailsLink = item.auctionId
+                ? `<a href="indiv/auction/auctions-detail.html?id=${encodeURIComponent(item.auctionId)}" class="text-sm font-bold text-swamp-700 hover:text-swamp-900">Open auction →</a>`
+                : '';
+
+            return `
+                <article class="notification-card rounded-2xl border ${item.isRead ? 'border-gray-100 bg-white' : 'border-swamp-200 bg-swamp-50'} p-4">
+                    <div class="flex items-start justify-between gap-4">
+                        <div class="flex gap-3">
+                            <div class="w-11 h-11 rounded-2xl ${typeInfo.bg} flex items-center justify-center text-xl">
+                                ${typeInfo.icon}
+                            </div>
+
+                            <div>
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <p class="font-black text-swamp-900">${escapeHtml(typeInfo.title)}</p>
+                                    ${readBadge}
+                                </div>
+
+                                <p class="text-sm text-swamp-700 mt-1">${escapeHtml(item.message || '')}</p>
+
+                                <div class="flex flex-wrap gap-3 mt-3">
+                                    <p class="text-xs text-swamp-500">${escapeHtml(formatDateTime(item.createdAtUtc))}</p>
+                                    ${detailsLink}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+            `;
+        }).join('');
+    }
+
+    async function markAllNotificationsAsRead() {
+        const token = getToken();
+
+        if (!token) {
+            showNotificationMessage('You need to log in first.', 'error');
+            return;
+        }
+
+        const button = document.getElementById('read-all-button');
+        const oldText = button.textContent;
+
+        button.disabled = true;
+        button.textContent = 'Saving...';
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/notifications/read-all`, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (!response.ok && response.status !== 204) {
+                const data = await response.json().catch(function () {
+                    return null;
+                });
+
+                setCheck('check-read-all', 'Failed');
+
+                throw new Error(data?.message || `Read-all request failed. HTTP ${response.status}`);
+            }
+
+            setCheck('check-read-all', 'OK');
+            showNotificationMessage('All notifications marked as read.', 'success');
+
+            await loadNotifications();
+        } catch (error) {
+            console.error(error);
+            showNotificationMessage(error.message || 'Cannot mark notifications as read.', 'error');
+        } finally {
+            button.disabled = false;
+            button.textContent = oldText;
+        }
+    }
+
+    function getNotificationTypeInfo(type) {
+        switch (type) {
+            case 'BidAccepted':
+                return {
+                    icon: '✅',
+                    title: 'Bid accepted',
+                    bg: 'bg-swamp-100'
+                };
+
+            case 'Outbid':
+                return {
+                    icon: '⚠️',
+                    title: 'Outbid',
+                    bg: 'bg-yellow-100'
+                };
+
+            case 'AuctionWon':
+                return {
+                    icon: '🏆',
+                    title: 'Auction won',
+                    bg: 'bg-yellow-100'
+                };
+
+            case 'AuctionEnded':
+                return {
+                    icon: '🏁',
+                    title: 'Auction ended',
+                    bg: 'bg-gray-100'
+                };
+
+            case 'AuctionEndingSoon':
+                return {
+                    icon: '⏰',
+                    title: 'Auction ending soon',
+                    bg: 'bg-orange-100'
+                };
+
+            case 'AuctionEndedNoBids':
+                return {
+                    icon: '🪷',
+                    title: 'Ended with no bids',
+                    bg: 'bg-gray-100'
+                };
+
+            default:
+                return {
+                    icon: '🔔',
+                    title: type || 'Notification',
+                    bg: 'bg-swamp-100'
+                };
+        }
+    }
+
+    function showNotificationMessage(message, type) {
+        const box = document.getElementById('notification-message');
+
+        box.textContent = message;
+        box.className = 'mt-5 rounded-xl px-4 py-3 text-sm font-semibold border';
+
+        if (type === 'success') {
+            box.classList.add('bg-swamp-50', 'text-swamp-700', 'border-swamp-200');
+        } else {
+            box.classList.add('bg-red-50', 'text-red-700', 'border-red-200');
+        }
+    }
+
+    function hideNotificationMessage() {
+        const box = document.getElementById('notification-message');
+
+        box.className = 'hidden mt-5 rounded-xl px-4 py-3 text-sm font-semibold border';
+        box.textContent = '';
+    }
+
+    function signOut() {
+        localStorage.removeItem('lilyToken');
+        localStorage.removeItem('lilyUser');
+        sessionStorage.removeItem('gsToken');
+        sessionStorage.removeItem('gsUser');
+
+        window.location.href = 'login.html';
+    }
+
+    function formatDateTime(value) {
+        if (!value) {
+            return '';
+        }
+
+        const date = new Date(value);
+
+        return date.toLocaleString('en-US', {
+            dateStyle: 'medium',
+            timeStyle: 'short'
+        });
+    }
+
+    function escapeHtml(value) {
+        return String(value ?? '')
+            .replaceAll('&', '&amp;')
+            .replaceAll('<', '&lt;')
+            .replaceAll('>', '&gt;')
+            .replaceAll('"', '&quot;')
+            .replaceAll("'", '&#039;');
+    }
+
+    loadProfilePage();
+</script>
+</body>
+</html>
