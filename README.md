@@ -1530,67 +1530,7 @@ dotnet test
 
 ---
 
-## 18. Что удалить перед сдачей
-
-Перед сдачей не нужно отправлять временные папки сборки:
-
-```text
-LilyMarket.Api/bin
-LilyMarket.Api/obj
-LilyMarket.Tests/bin
-LilyMarket.Tests/obj
-```
-
-Также не нужно отправлять пользовательские загруженные файлы:
-
-```text
-LilyMarket.Api/wwwroot/uploads/*
-```
-
-Но можно оставить структуру папок:
-
-```text
-LilyMarket.Api/wwwroot/uploads/auction-covers
-```
-
-Если Git не сохраняет пустую папку, можно добавить `.gitkeep`.
-
----
-
-## 19. Что обязательно оставить
-
-```text
-README.md
-LILY_MARKET_FULL_README.md
-LilyMarket.sln
-Dockerfile
-docker-compose.yml
-.dockerignore
-.gitignore
-LilyMarket.Api/
-LilyMarket.Tests/
-indiv/auction/
-register.html
-login.html
-profile.html
-index.html
-green-toad-logo.svg
-green-toad-sad.svg
-green-toad-wink.svg
-```
-
-Обязательно оставить:
-
-```text
-LilyMarket.Api/Migrations
-LilyMarket.Api/appsettings.json
-LilyMarket.Api/appsettings.Development.json
-LilyMarket.Api/Program.cs
-```
-
----
-
-## 20. Быстрый чек-лист перед сдачей
+## 18. Быстрый чек-лист перед сдачей
 
 Выполнить:
 
@@ -1631,7 +1571,7 @@ http://127.0.0.1:5500/register.html
 
 ---
 
-## 21. Академическая честность и использование ИИ-инструмента
+## 19. Академическая честность и использование ИИ-инструмента
 
 Проектные решения и итоговая реализация адаптированы под данное индивидуальное задание и структуру проекта Lily Market.
 
@@ -1648,7 +1588,7 @@ http://127.0.0.1:5500/register.html
 
 ---
 
-## 22. Итог
+## 20. Итог
 
 Проект реализует backend аукционного приложения Lily Market с полным циклом:
 
